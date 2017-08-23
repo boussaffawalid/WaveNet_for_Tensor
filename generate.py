@@ -14,9 +14,9 @@ from wavenet import WaveNetModel, mu_law_decode, mu_law_encode, audio_reader
 
 SAMPLES = 16000
 TEMPERATURE = 1.0
-LOGDIR = './logdir'
+LOGDIR = os.path.join(os.getcwd(), 'logdir')
 WINDOW = 8000
-WAVENET_PARAMS = './wavenet_params.json'
+WAVENET_PARAMS = os.path.join(os.getcwd(), 'wavenet_params.json')
 SAVE_EVERY = None
 SILENCE_THRESHOLD = 0.1
 
@@ -68,7 +68,7 @@ def get_arguments():
     parser.add_argument(
         '--wav_out_path',
         type=str,
-        default=None,
+        default='generated.wav',
         help='Path to output wav file')
     parser.add_argument(
         '--save_every',
@@ -139,11 +139,11 @@ def main():
         next_sample = net.predict_proba(samples)
 
     if args.fast_generation:
-        sess.run(tf.initialize_all_variables())
+        sess.run( tf.global_variables_initializer() )
         sess.run(net.init_ops)
 
     variables_to_restore = {
-        var.name[:-2]: var for var in tf.all_variables()
+        var.name[:-2]: var for var in tf.global_variables()
         if not ('state_buffer' in var.name or 'pointer' in var.name)}
     saver = tf.train.Saver(variables_to_restore)
 
@@ -228,9 +228,9 @@ def main():
 
     # Save the result as an audio summary.
     datestring = str(datetime.now()).replace(' ', 'T')
-    writer = tf.train.SummaryWriter(logdir)
-    tf.audio_summary('generated', decode, wavenet_params['sample_rate'])
-    summaries = tf.merge_all_summaries()
+    writer = tf.summary.FileWriter(logdir)
+    tf.summary.audio('generated', decode, wavenet_params['sample_rate'])
+    summaries = tf.summary.merge_all()
     summary_out = sess.run(summaries,
                            feed_dict={samples: np.reshape(waveform, [-1, 1])})
     writer.add_summary(summary_out)

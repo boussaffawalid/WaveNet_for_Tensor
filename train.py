@@ -20,12 +20,12 @@ from tensorflow.python.client import timeline
 from wavenet import WaveNetModel, AudioReader, optimizer_factory
 
 BATCH_SIZE = 1
-DATA_DIRECTORY = './VCTK-Corpus'
-LOGDIR_ROOT = './logdir'
+DATA_DIRECTORY = os.path.join(os.getcwd(), 'VCTK-Corpus')
+LOGDIR_ROOT = os.path.join(os.getcwd(), 'logdir')
 CHECKPOINT_EVERY = 50
 NUM_STEPS = int(1e5)
 LEARNING_RATE = 1e-3
-WAVENET_PARAMS = './wavenet_params.json'
+WAVENET_PARAMS = os.path.join(os.getcwd(), 'wavenet_params.json')
 STARTED_DATESTRING = "{0:%Y-%m-%dT%H-%M-%S}".format(datetime.now())
 SAMPLE_SIZE = 100000
 L2_REGULARIZATION_STRENGTH = 0
@@ -239,14 +239,14 @@ def main():
     optim = optimizer.minimize(loss, var_list=trainable)
 
     # Set up logging for TensorBoard.
-    writer = tf.train.SummaryWriter(logdir)
+    writer = tf.summary.FileWriter(logdir)
     writer.add_graph(tf.get_default_graph())
     run_metadata = tf.RunMetadata()
-    summaries = tf.merge_all_summaries()
+    summaries = tf.summary.merge_all()
 
     # Set up session
     sess = tf.Session(config=tf.ConfigProto(log_device_placement=False))
-    init = tf.initialize_all_variables()
+    init = tf.global_variables_initializer()
     sess.run(init)
 
     # Saver for storing checkpoints of the model.

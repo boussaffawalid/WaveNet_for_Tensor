@@ -1,1 +1,2 @@
-librosa>=0.4.3
+librosa==0.4.3
+tensorflow==1.2.0
